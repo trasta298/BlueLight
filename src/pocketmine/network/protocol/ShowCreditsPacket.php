@@ -21,19 +21,13 @@
 
 namespace pocketmine\network\protocol;
 
-#include <rules/DataPacket.h>
+use pocketmine\utils\Binary;
 
+class ShowCreditsPacket extends DataPacket{
+	const NETWORK_ID = Info::SHOW_CREDITS_PACKET;
 
-class FullChunkDataPacket extends DataPacket{
-	const NETWORK_ID = Info::FULL_CHUNK_DATA_PACKET;
-
-	const ORDER_COLUMNS = 0;
-	const ORDER_LAYERED = 1;
-
-	public $chunkX;
-	public $chunkZ;
-//	public $order = self::ORDER_COLUMNS;
-	public $data;
+	public $eid;
+	public $int;
 
 	public function decode(){
 
@@ -41,12 +35,7 @@ class FullChunkDataPacket extends DataPacket{
 
 	public function encode(){
 		$this->reset();
-		$this->putVarInt($this->chunkX);
-		$this->putVarInt($this->chunkZ);
-//		$this->putByte($this->order);
-		$this->putString($this->data);
-		$this->putUnsignedVarInt(100);
-
+		$this->putEntityId($this->eid);
+		$this->putVarInt($this->int);
 	}
-
 }

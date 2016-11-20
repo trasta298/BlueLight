@@ -38,7 +38,7 @@ use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 
-class Item implements ItemIds{
+class Item implements ItemIds, \JsonSerializable{
 
 	/** @var NBT */
 	private static $cachedParser = null;
@@ -148,6 +148,11 @@ class Item implements ItemIds{
 			self::$list[self::GOLDEN_APPLE] = GoldenApple::class;
 			self::$list[self::SIGN] = Sign::class;
 			self::$list[self::WOODEN_DOOR] = WoodenDoor::class;
+			self::$list[self::SPRUCE_DOOR] = SpruceDoor::class;
+			self::$list[self::BIRCH_DOOR] = BirchDoor::class;
+			self::$list[self::JUNGLE_DOOR] = JungleDoor::class;
+			self::$list[self::ACACIA_DOOR] = AcaciaDoor::class;
+			self::$list[self::DARK_OAK_DOOR] = DarkOakDoor::class;
 			self::$list[self::BUCKET] = Bucket::class;
 			self::$list[self::MINECART] = Minecart::class;
 			self::$list[self::IRON_DOOR] = IronDoor::class;
@@ -230,8 +235,12 @@ class Item implements ItemIds{
 
 		$creativeItems = new Config(Server::getInstance()->getFilePath() . "src/pocketmine/resources/creativeitems.json", Config::JSON, []);
 
-		foreach($creativeItems->getAll() as $item){
-			self::addCreativeItem(Item::get($item["ID"], $item["Damage"]));
+		foreach($creativeItems->getAll() as $data){
+			$item = Item::get($data["id"], $data["damage"], $data["count"], $data["nbt"]);
+			if($item->getName() === "Unknown"){
+				continue;
+			}
+			self::addCreativeItem($item);
 		}
 	}
 
@@ -244,7 +253,7 @@ class Item implements ItemIds{
 	}
 
 	public static function addCreativeItem(Item $item){
-		Item::$creative[] = Item::get($item->getId(), $item->getDamage());
+		Item::$creative[] = clone $item;
 	}
 
 	public static function removeCreativeItem(Item $item){
@@ -734,10 +743,6 @@ class Item implements ItemIds{
 		return false;
 	}
 
-	final public function __toString() : string{
-		return "Item " . $this->name . " (" . $this->id . ":" . ($this->meta === null ? "?" : $this->meta) . ")x" . $this->count . ($this->hasCompoundTag() ? " tags:0x" . bin2hex($this->getCompoundTag()) : "");
-	}
-
 	public function getDestroySpeed(Block $block, Player $player){
 		return 1;
 	}
@@ -758,6 +763,19 @@ class Item implements ItemIds{
 		}
 
 		return false;
+	}
+
+	final public function __toString() : string{
+		return "Item " . $this->name . " (" . $this->id . ":" . ($this->meta === null ? "?" : $this->meta) . ")x" . $this->count . ($this->hasCompoundTag() ? " tags:0x" . bin2hex($this->getCompoundTag()) : "");
+	}
+
+	final public function jsonSerialize(){
+		return [
+			"id" => $this->id,
+			"damage" => $this->meta,
+			"count" => $this->count, //TODO: separate items and stacks
+			"nbt" => $this->tags
+		];
 	}
 
 }

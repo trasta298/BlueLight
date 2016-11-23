@@ -2714,7 +2714,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				switch($packet->action){
 					case InteractPacket::ACTION_RIGHT_CLICK:
 						if($target instanceof Horse){
-						$this->setLink($target);
+						//$this->setLink($target);
 						}
 					break;
 					case InteractPacket::ACTION_LEFT_CLICK:
@@ -3366,6 +3366,14 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 	public function sendTip($message){
 		$pk = new TextPacket();
 		$pk->type = TextPacket::TYPE_TIP;
+		$pk->message = $message;
+		$this->dataPacket($pk);
+	}
+
+	public function sendWhisper($sender, $message){
+		$pk = new TextPacket();
+		$pk->type = TextPacket::TYPE_WHISPER;
+		$pk->source = $sender;
 		$pk->message = $message;
 		$this->dataPacket($pk);
 	}
